@@ -1,4 +1,4 @@
-# Practica 1
+# Practica
 
 - Redes de Computadoras 2
 - Sección N
