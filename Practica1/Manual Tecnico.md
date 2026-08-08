@@ -19,18 +19,23 @@ Implementar una topología de red con VLANs, VTP, STP, enrutamiento inter-VLAN y
 La práctica está dividida en dos lados:
 
 - Lado izquierdo:
-  - Switch12 como servidor VTP
+  - Switch1(I) como servidor VTP
   - Switch1 a Switch11 como clientes VTP
-  - Router R-IZQ para inter-VLAN routing
+  - Router R_IZQ para inter-VLAN routing
   - Enrutamiento dinámico con OSPF, RIP y EIGRP entre routers
 
 - Lado derecho:
   - Se continúa la propagación de rutas con protocolos dinámicos entre los routers intermedios y el router de acceso derecho
+  - Switch1(D) como servidor VTP
+  - Switch1 a Switch11 como clientes VTP
+  - Router R_DER para inter-VLAN routing
+  - Enrutamiento dinámico con OSPF, RIP y EIGRP entre routers
+
 
 ### Diagrama lógico
 
 ```text
-[Switch12]---[Switch1-11]
+[Switch1(I)]---[Switch1-1(D)]
     |
    [R-IZQ]
       |
@@ -49,7 +54,7 @@ Se configuraron tres VLAN principales en el dominio VTP:
 
 ## 5. Configuración de VTP
 
-### Switch12 (modo servidor)
+### Switch1(I) (modo servidor)
 
 ```bash
 enable
@@ -57,11 +62,11 @@ configure terminal
 vtp version 2
 vtp mode server
 vtp domain G17
-vtp password redes2grupo17B
+vtp password redes2grupo17
 end
 ```
 
-### Switch1-11 (modo cliente)
+### Switch1-1(D) (modo cliente)
 
 ```bash
 enable
@@ -69,7 +74,7 @@ configure terminal
 vtp version 2
 vtp mode client
 vtp domain G17
-vtp password redes2grupo17B
+vtp password redes2grupo17
 end
 ```
 
@@ -91,8 +96,8 @@ switchport trunk allowed vlan all
 
 Se aplicó en:
 
-- Switch12
-- Switch1 a Switch11
+- Switch1(I)
+- Switch1 a Switch1(D)
 
 ## 7. Configuración de puertos de acceso
 
@@ -118,7 +123,7 @@ spanning-tree mode pvst
 
 ### Root Bridge principal
 
-- Switch12
+- Switch1(I)
 
 ```bash
 spanning-tree vlan 18,28,38 root primary
@@ -284,12 +289,9 @@ exit
 | Basicos3      | 78   | 192.178.78.10 | 192.178.78.1 |
 | Bachillerato3 | 68   | 192.178.68.10 | 192.178.68.1 |
 | Primaria3     | 88   | 192.178.88.10 | 192.178.88.1 |
-| Primaria4     | 88   | 192.178.88.11 | 192.178.88.1 |
+| Primaria4     | 88   | 192.178.88.20 | 192.178.88.1 |
 
 ## 12. Verificación esperada
-
-Para comprobar que la implementación fue exitosa, se debe verificar:
-
 1. Que los switches formen parte del mismo dominio VTP `G17`.
 2. Que las VLANs se propaguen correctamente desde `Switch12` a los switches clientes.
 3. Que los enlaces trunk estén operativos.
