@@ -7,7 +7,7 @@ La práctica consiste en diseñar una red para un restaurante de tres pisos medi
 El diseño utiliza VLAN para segmentar las áreas de trabajo, EIGRP para el intercambio de rutas, LACP para la agregación de enlaces y HSRP para la redundancia de las puertas de enlace. Este manual presenta la topología, el cálculo de subredes, los parámetros de configuración y los procedimientos de verificación.
 
 
-## 1. Integrantes
+## Integrantes
 
 | Integrante | Nombre y carné |
 |---|---|
@@ -15,18 +15,7 @@ El diseño utiliza VLAN para segmentar las áreas de trabajo, EIGRP para el inte
 | 2 | Isamir Alessandro Armas Cano — 201901403 |
 | 3 | Carlos Daniel Catalán Catalán — 201520557 |
 
-
-## 2. Observaciones técnicas pendientes
-
-1. **Direccionamiento MAN:** el esquema registrado asigna `10.2.8.32/27` al tránsito del Piso 2 y `10.2.8.36/30` y `10.2.8.40/30` al Piso 3. Estas dos últimas subredes están contenidas en el bloque del Piso 2, aunque corresponden a segmentos distintos. Es necesario contrastar las asignaciones con la configuración de los equipos y eliminar el solapamiento.
-2. **Capacidad COCINA:** `/26` tiene 62 direcciones útiles. Una VIP y dos interfaces físicas HSRP dejan **59 clientes**, frente a 60 hosts solicitados. Si los 60 son terminales, hace falta ampliar y reubicar ADMIN. El [plan de correcciones](Documentacion/Revision_y_Correcciones.md) explica la alternativa.
-3. **Relay DHCP:** está pendiente verificar la presencia de `ip helper-address 192.198.100.130` en las subinterfaces de clientes de R3 y R4. Este parámetro no figura en los bloques de configuración disponibles.
-4. **Redes inalámbricas:** falta verificar la difusión del SSID, que debe estar desactivada en el Piso 2 y activada en el Piso 3, así como las contraseñas administrativas de los cuatro WRT. También debe aclararse el valor de X empleado en los nombres y contraseñas de la tabla inalámbrica del enunciado.
-5. **HSRP:** se encuentran definidos cuatro grupos con distribución del rol activo entre cada pareja de routers. La prueba de conmutación ante fallas está pendiente en los cuatro grupos.
-6. **Entrega:** archivo actual `Practica2_G17.pkt`; nombre solicitado `Practica2_17.pkt`. Carpeta actual `Practica2`; el PDF solicita `Práctica 2` en el repositorio de la práctica 1. Guardar la versión final con esos nombres al cerrar las pruebas.
-7. **Método de configuración:** el enunciado exige el uso de consola. Dado que la topología incluye equipos Server-PT y WRT300N cuyos servicios se administran mediante pantallas, queda pendiente aclarar con el auxiliar el procedimiento admitido para estos dispositivos.
-
-## 3. Topología
+## Topología
 
 La siguiente figura corresponde a la topología que se utilizo para la practica.
 
@@ -78,7 +67,7 @@ Servicios Centrales se ubica en el Piso 1. El core MS2 enlaza las tres ramas MAN
 | MS4 | Fa0/5–6 | WAN de ambos WRT del Piso 3 |
 
 
-## 4. VLAN
+## VLAN
 
 Para calcular el direccionamiento y los identificadores de VLAN se suman los dígitos del número de grupo: `X = 1 + 7 = 8`. Al pertenecer al grupo 17, de número impar, corresponde utilizar EIGRP. Se emplea el sistema autónomo 8 para los equipos participantes.
 
@@ -117,7 +106,7 @@ Cada /24 se divide en dos /25: 128 direcciones, 126 útiles. Cada WLAN tiene un 
 | WEB_SERVERS | 192.198.100.0/25 | 255.255.255.128 | .1–.126 | 192.198.100.127 | 192.198.100.1 |
 | DHCP_SERVERS | 192.198.100.128/25 | 255.255.255.128 | .129–.254 | 192.198.100.255 | 192.198.100.129 |
 
-## 6. Subnetting MAN — 10.2.8.0/24
+## Subnetting MAN — 10.2.8.0/24
 
 Los enlaces de dos extremos usan /30 (máscara 255.255.255.252, dos direcciones útiles). El tránsito compartido de Piso 2 usa /27 (255.255.255.224, 30 útiles). Por ello el conjunto MAN utiliza tamaños variables.
 
@@ -134,7 +123,7 @@ Los enlaces de dos extremos usan /30 (máscara 255.255.255.252, dos direcciones 
 | MS4 Fa0/5–P3_R1 WAN | **10.2.8.36/30** | .37 | .38 | 10.2.8.39 |
 | MS4 Fa0/6–P3_R3 WAN | **10.2.8.40/30** | .41 | .42 | 10.2.8.43 |
 
-## 7. HSRP y gateways
+## HSRP y gateways
 
 Los clientes usan la VIP, no la IP física de un router. Cada pareja comparte VLAN y VIP. El activo preferido tiene prioridad 110 y el otro 100; ambos incluyen `preempt`.
 
@@ -163,7 +152,7 @@ show standby
 
 Ante una falla del router activo o de su enlace LAN, el router de respaldo debe asumir la puerta de enlace virtual. La detección de una falla exclusiva del enlace WAN requiere seguimiento de interfaz, cuya configuración está pendiente de verificar. Al restablecer el router de mayor prioridad, se comprueban la recuperación del rol activo mediante `preempt` y la continuidad del tráfico.
 
-## 8. DHCP y WiFi
+## DHCP y WiFi
 
 ### DHCP central cableado
 
@@ -214,7 +203,7 @@ Las interfaces WAN del Piso 2 utilizan `.34` y `.35`, máscara /27 y gateway `.3
 
 Los parámetros se consultan en WRT → GUI → Setup/Basic Setup (WAN, LAN, DHCP y DNS), Advanced Routing (modo de operación), Wireless/Basic Wireless Settings (SSID y broadcast), Wireless Security (WPA2/AES) y Administration/Management (contraseña administrativa). 
 
-## 9. EIGRP y LACP
+## EIGRP y LACP
 
 En MS1–MS4 se requiere `ip routing`. Los enlaces Po1–Po3 son interfaces de capa 3 (`no switchport`) con cuatro puertos físicos cada uno, configurados con `channel-group N mode active` en ambos extremos. No son trunks de usuarios.
 
@@ -268,7 +257,7 @@ ip route 192.198.38.128 255.255.255.128 10.2.8.42
 
 La propagación se verifica en las tablas de enrutamiento: las rutas estáticas se identifican con `S` en el equipo de origen y con `D EX` en los equipos que las reciben mediante redistribución. Las rutas EIGRP internas aparecen con `D`. Cuando una ruta no se propaga, se revisan el siguiente salto, la redistribución y la métrica.
 
-## 10. DNS, HTTP y contenido
+## DNS, HTTP y contenido
 
 ServerWeb: IP `192.198.100.2`, máscara `255.255.255.128`, gateway `192.198.100.1`, DNS `192.198.100.2`. Conectado a SW1 Fa0/1, VLAN 38.
 
@@ -281,7 +270,7 @@ ServerWeb: IP `192.198.100.2`, máscara `255.255.255.128`, gateway `192.198.100.
 
 La configuración del servidor se consulta en Desktop → IP Configuration, Services → DNS y Services → HTTP.
 
-## 11. Comandos utilizados y respaldo
+## Comandos utilizados y respaldo
 
 Los siguientes comandos permiten consultar el estado de los equipos y comprobar los servicios de red:
 
@@ -307,3 +296,30 @@ copy running-config startup-config
 ```
 
 El nombre de destino se acepta con Enter.
+
+## Prueba de HSRP failover
+R3 activo y R4 en standby
+
+![R3 activo](Documentacion/R3activo.png)
+
+R4 activo y R3 en standby
+
+![R4 activo](Documentacion/R4activo.png)
+
+Ping de la computadora de la cocina con R3 activo
+
+![Ping cocina](Documentacion/pingCocina.png)
+
+R3 Desactivado
+
+![Ping cocina](Documentacion/R3inactivo.png)
+
+
+Ping de la computadora de la cocina con R3 inactivo
+
+![Ping cocina](Documentacion/Pinginactivo.png)
+
+Web con R3 incativo
+
+![Ping cocina](Documentacion/Web.png)
+
